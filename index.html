@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#060609" />
+  <title>Super Tic Tac Toe</title>
+  <meta name="description" content="Super Tic Tac Toe — a 3×3 grid of boards, nine colors, two players. Win a board to claim it; your move decides where your rival plays next." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2308080d'/%3E%3Cg stroke='%23ffffff' stroke-opacity='.55' stroke-width='2'%3E%3Cpath d='M6 23h52M6 41h52M23 6v52M41 6v52'/%3E%3C/g%3E%3Cg stroke='%235bc9ff' stroke-width='4' stroke-linecap='round'%3E%3Cpath d='M11 11l6 6M17 11l-6 6'/%3E%3C/g%3E%3Cg stroke='%23ff9a5c' stroke-width='4' stroke-linecap='round'%3E%3Ccircle cx='47' cy='47' r='3.5'/%3E%3C/g%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-kicker">
+          <span>Super</span>
+          <span class="kicker-sep" aria-hidden="true"></span>
+          <span>Round <b id="roundNum">01</b></span>
+        </div>
+        <h1>Tic Tac Toe<span class="brand-dot">.</span></h1>
+      </div>
+
+      <div class="controls">
+        <button class="icon-btn" id="undoBtn" type="button" title="Undo (U)" aria-label="Undo last move">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 14 4 9l5-5" /><path d="M4 9h9.5a6.5 6.5 0 1 1 0 13H9" />
+          </svg>
+        </button>
+        <button class="icon-btn" id="soundBtn" type="button" title="Toggle sound (M)" aria-label="Toggle sound">
+          <svg class="sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 5 6.5 9H3v6h3.5L11 19V5Z" /><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M18.5 6a9 9 0 0 1 0 12" />
+          </svg>
+          <svg class="sound-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M11 5 6.5 9H3v6h3.5L11 19V5Z" /><path d="m16 9 5 6M21 9l-5 6" />
+          </svg>
+        </button>
+        <button class="new-btn" id="newBtn" type="button" title="New round (N)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span>New round</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="hud" aria-label="Match status">
+      <article class="player" data-player="X" id="playerX">
+        <div class="avatar" aria-hidden="true">
+          <svg viewBox="0 0 100 100"><path d="M28 28 72 72M72 28 28 72" /></svg>
+        </div>
+        <div class="p-meta">
+          <span class="p-name">Player one</span>
+          <span class="p-sub">Ice · X</span>
+        </div>
+        <div class="p-score-block">
+          <span class="p-score-label">Wins</span>
+          <span class="p-score" id="scoreX">0</span>
+        </div>
+      </article>
+
+      <div class="status" aria-live="polite">
+        <span class="turn-label"><span class="turn-dot" id="turnDot"></span><span id="turnText">Player one</span></span>
+        <span class="target" id="targetPill">Free choice</span>
+      </div>
+
+      <article class="player" data-player="O" id="playerO">
+        <div class="avatar" aria-hidden="true">
+          <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="24" /></svg>
+        </div>
+        <div class="p-meta">
+          <span class="p-name">Player two</span>
+          <span class="p-sub">Ember · O</span>
+        </div>
+        <div class="p-score-block">
+          <span class="p-score-label">Wins</span>
+          <span class="p-score" id="scoreO">0</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="stage" id="stage" aria-label="Game board">
+      <div class="macro-lines" aria-hidden="true">
+        <i class="v v1"></i><i class="v v2"></i><i class="h h1"></i><i class="h h2"></i>
+      </div>
+      <div class="macro" id="macro"></div>
+      <svg class="winline" id="winline" aria-hidden="true"></svg>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+      <div class="result" id="result" hidden role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+        <div class="result-card">
+          <span class="result-kicker" id="resultKicker">Round 01 · Final</span>
+          <div class="result-mark" id="resultMark"></div>
+          <h2 id="resultTitle">Player one wins</h2>
+          <p id="resultText">Three boards in a row.</p>
+          <div class="result-actions">
+            <button class="btn-primary" id="rematchBtn" type="button">Rematch</button>
+            <button class="btn-ghost" id="reviewBtn" type="button">Review board</button>
+          </div>
+          <div class="result-fine">
+            <span id="resultScore">Ice 0 · Ember 0 · Draws 0</span>
+            <button class="link-btn" id="resetMatchBtn" type="button">Reset match</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p><b>How to play</b> Win a small board with three in a row. Your move decides where your rival plays next — if that board is closed, they play anywhere.</p>
+      <div class="shortcuts" aria-label="Keyboard shortcuts">
+        <span><kbd>U</kbd> undo</span>
+        <span><kbd>N</kbd> new</span>
+        <span><kbd>M</kbd> sound</span>
+      </div>
+    </footer>
+  </main>
+
+  <svg class="svg-defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="gradX" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#f4fdff" />
+        <stop offset=".5" stop-color="#a6e9ff" />
+        <stop offset="1" stop-color="#47b6ff" />
+      </linearGradient>
+      <linearGradient id="gradO" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#fff4da" />
+        <stop offset=".5" stop-color="#ffc47c" />
+        <stop offset="1" stop-color="#ff7d48" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <script src="game.js"></script>
+</body>
+</html>
